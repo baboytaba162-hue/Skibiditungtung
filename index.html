@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#49364e" />
+  <title>A letter for you</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --cream: #fff8ec;
+      --muted: rgba(255, 248, 236, .78);
+      --glass: rgba(49, 37, 53, .58);
+      --border: rgba(255, 248, 236, .3);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100svh;
+      margin: 0;
+      overflow: hidden;
+      color: var(--cream);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        linear-gradient(
+          180deg,
+          #c8b5d1 0%,
+          #e4bacb 34%,
+          #f4b8a9 53%,
+          #d7837e 69%,
+          #53404e 69.2%,
+          #25222f 100%
+        );
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .scene {
+      position: relative;
+      isolation: isolate;
+      display: grid;
+      min-height: 100vh;
+      min-height: 100svh;
+      place-items: center;
+      overflow: hidden;
+      padding: 1.5rem;
+    }
+
+    .sun {
+      position: absolute;
+      z-index: -2;
+      top: 66%;
+      left: 50%;
+      width: clamp(68px, 10vw, 110px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff0c9;
+      box-shadow:
+        0 0 35px 12px rgba(255, 234, 191, .45),
+        0 0 100px 38px rgba(255, 193, 171, .24);
+      animation: sun-glow 7s ease-in-out infinite alternate;
+    }
+
+    .horizon {
+      position: absolute;
+      z-index: -1;
+      inset: 68% -3% 0;
+      background: linear-gradient(180deg, #624455, #25222f 84%);
+      clip-path: polygon(
+        0 7%, 8% 10%, 17% 4%, 25% 8%, 34% 2%, 42% 7%,
+        50% 1%, 59% 6%, 68% 3%, 77% 8%, 88% 3%, 100% 9%,
+        100% 100%, 0 100%
+      );
+    }
+
+    .content {
+      z-index: 3;
+      width: min(100%, 720px);
+      padding: 1rem;
+      text-align: center;
+      transform: translateY(-10vh);
+      animation: fade-in .9s ease both;
+    }
+
+    .eyebrow {
+      margin: 0 0 .75rem;
+      color: var(--muted);
+      font: 600 .7rem/1.4 system-ui, sans-serif;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 400;
+      letter-spacing: .1em;
+      text-shadow: 0 3px 24px rgba(60, 38, 55, .25);
+      overflow-wrap: anywhere;
+    }
+
+    .subtitle {
+      max-width: 36rem;
+      margin: .9rem auto 0;
+      color: var(--muted);
+      font: 300 clamp(.9rem, 2.6vw, 1.05rem)/1.7 system-ui, sans-serif;
+      letter-spacing: .08em;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: min(240px, 55%);
+      margin: 1.25rem auto;
+      color: #ffe8aa;
+      opacity: .85;
+    }
+
+    .divider::before,
+    .divider::after {
+      height: 1px;
+      flex: 1;
+      content: "";
+      background: currentColor;
+    }
+
+    .open-button {
+      min-height: 46px;
+      padding: .8rem 1.25rem;
+      border: 1px solid rgba(255, 248, 236, .62);
+      border-radius: 999px;
+      color: var(--cream);
+      background: rgba(255, 255, 255, .1);
+      font: 500 .9rem/1.2 system-ui, sans-serif;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .open-button:hover {
+      transform: translateY(-2px);
+      border-color: white;
+      background: rgba(255, 255, 255, .2);
+    }
+
+    .open-button:focus-visible {
+      outline: 3px solid #ffe8aa;
+      outline-offset: 4px;
+    }
+
+    .letter-panel {
+      width: min(100%, 560px);
+      max-height: 0;
+      margin: 0 auto;
+      overflow: hidden;
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        max-height .55s ease,
+        margin .4s ease,
+        opacity .35s ease,
+        transform .35s ease,
+        visibility .55s;
+    }
+
+    .letter-panel.is-open {
+      max-height: min(52vh, 480px);
+      max-height: min(52svh, 480px);
+      margin-top: 1rem;
+      overflow-y: auto;
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+      scrollbar-color: rgba(255, 248, 236, .65) rgba(255, 255, 255, .1);
+      scrollbar-width: thin;
+    }
+
+    .letter {
+      padding: 1.4rem clamp(1.1rem, 5vw, 2rem);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--cream);
+      background: var(--glass);
+      text-align: left;
+      line-height: 1.8;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 16px 50px rgba(35, 26, 39, .16);
+    }
+
+    .letter h2 {
+      margin: 0 0 1rem;
+      font-size: 1.45rem;
+      font-weight: 400;
+    }
+
+    .letter p {
+      margin: 0 0 1rem;
+    }
+
+    .letter .signoff {
+      margin: .5rem 0 0;
+      color: #ffe8c3;
+      text-align: right;
+      font-style: italic;
+    }
+
+    .meadow {
+      position: absolute;
+      z-index: 2;
+      right: 0;
+      bottom: -2px;
+      left: 0;
+      height: 30%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .grass {
+      position: absolute;
+      bottom: -12px;
+      left: var(--x);
+      width: 2px;
+      height: var(--height);
+      border-radius: 100% 0 0 0;
+      background: rgba(31, 28, 39, .8);
+      transform-origin: bottom center;
+      animation: sway var(--speed) ease-in-out infinite alternate;
+    }
+
+    .grass::before,
+    .grass::after {
+      position: absolute;
+      left: 0;
+      width: var(--leaf);
+      height: 1px;
+      content: "";
+      background: rgba(31, 28, 39, .8);
+      transform-origin: left center;
+    }
+
+    .grass::before {
+      bottom: 40%;
+      transform: rotate(-35deg);
+    }
+
+    .grass::after {
+      bottom: 66%;
+      transform: rotate(28deg);
+    }
+
+    .firefly {
+      position: absolute;
+      bottom: var(--bottom);
+      left: var(--left);
+      width: var(--size);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #ffe99a;
+      box-shadow: 0 0 10px 3px rgba(255, 224, 126, .4);
+      animation: firefly-glow var(--duration) ease-in-out var(--delay) infinite alternate;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(-6vh); }
+      to { opacity: 1; transform: translateY(-10vh); }
+    }
+
+    @keyframes sway {
+      from { transform: rotate(-5deg); }
+      to { transform: rotate(6deg); }
+    }
+
+    @keyframes firefly-glow {
+      from { opacity: .18; transform: translateY(4px) scale(.75); }
+      to { opacity: 1; transform: translateY(-8px) scale(1.15); }
+    }
+
+    @keyframes sun-glow {
+      from { filter: brightness(.96); }
+      to { filter: brightness(1.08); }
+    }
+
+    @media (max-width: 600px) {
+      .scene {
+        padding: 1rem;
+      }
+
+      .content {
+        transform: translateY(-7vh);
+      }
+
+      .letter-panel.is-open {
+        max-height: 48vh;
+        max-height: 48svh;
+      }
+
+      .letter {
+        padding: 1.15rem;
+        font-size: .95rem;
+        line-height: 1.7;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="scene">
+    <div class="sun" aria-hidden="true"></div>
+    <div class="horizon" aria-hidden="true"></div>
+
+    <section class="content" aria-labelledby="page-title">
+      <p class="eyebrow">A little something for you</p>
+      <h1 id="page-title">My beloved</h1>
+      <p class="subtitle">Skibidixtungtung</p>
+
+      <div class="divider" aria-hidden="true"><span>✦</span></div>
+
+      <button
+        class="open-button"
+        id="letter-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="letter-panel"
+      >
+        Read
+      </button>
+
+      <div class="letter-panel" id="letter-panel" aria-hidden="true" inert>
+        <article class="letter" aria-label="A love letter">
+          <h2>To my beautiful love,</h2>
+
+          <p>
+            Hi, my beautiful love. I love you very, very much. Every week and
+            month that goes by, I fall in love with you more and more. No one
+            could replace you or be more beautiful to me. Having you beside me
+            feels like a blessing. Ever since you came into my life, my days
+            have been better. I wait for your replies; you make me smile and
+            feel happy and joyful. Words can’t express how grateful I am.
+          </p>
+
+          <p>
+            If being beautiful made you rich, you’d be a billionaire by
+            now—that’s how beautiful you are. Don’t listen to what other people
+            say. Be yourself; that’s what makes you special. You don’t have to
+            hide things from me. I’ll accept you no matter what.
+          </p>
+
+          <p>
+            These four months have been the happiest I’ve had because you’re
+            in my life. If people were stars, you’d be the shiniest one. You
+            shine like no other, and no one compares to you. Learning new
+            things about you is so much fun—what you like, what you listen to,
+            and what you do when you’re bored. Your chitchats are fun to
+            listen to; just listening to you is fun already.
+          </p>
+
+          <p>
+            Spending time with you is the best. Spending time with my beautiful,
+            cute, adorable, smart, hardworking, funny, smol love is always
+            worth it—no time wasted. I’ll always be your biggest fan. I’d be
+            there for you whenever you needed me because I care about you
+            extremely much. Your feelings are important to me. Whether it’s a
+            small problem or a big one, tell me about it. I won’t overreact or
+            say you’re exaggerating.
+          </p>
+
+          <p>
+            No one would probably know how much I truly love you. I’m sorry if
+            I sometimes ignore you or don’t talk to you and make you overthink.
+            It doesn’t mean I have a problem with you; I might just be
+            prioritizing something first. It wouldn’t be me if I didn’t talk
+            to you or annoy you! I’m sorry if my actions hurt you. I’m not
+            always good at expressing myself, and I want to keep getting
+            better.
+          </p>
+
+          <p>
+            One very, very important thing: please don’t hide how you feel. If
+            something is hurting you or causing you a problem, tell me. I
+            don’t want you to keep it all inside.
+          </p>
+
+          <p>
+            Once again, you’re very beautiful, and I’ll remind you whenever I
+            can. I’m being completely truthful: you’re beautiful with or
+            without makeup, stressed or relaxed, lazy or hardworking. In my
+            eyes, you’re incredible. Seeing you work hard makes me proud and
+            happy, knowing the girl I love is working toward her future.
+            Seeing you having fun makes me feel calm, because I never want you
+            to have a bad day.
+          </p>
+
+          <p>
+            The gifts and food I give you aren’t just ordinary gifts. I think
+            about what you might like. I ask about your favorite food, anime,
+            or drink because I want to choose something that feels special to
+            you.
+          </p>
+
+          <p class="signoff">I love you so much. ❤️</p>
+        </article>
+      </div>
+    </section>
+
+    <div class="meadow" id="meadow" aria-hidden="true"></div>
+  </main>
+
+  <script>
+    const meadow = document.querySelector("#meadow");
+    const toggle = document.querySelector("#letter-toggle");
+    const panel = document.querySelector("#letter-panel");
+
+    // Add decorative grass and fireflies.
+    const random = (min, max) => Math.random() * (max - min) + min;
+
+    for (let i = 0; i < 75; i++) {
+      const blade = document.createElement("span");
+      blade.className = "grass";
+      blade.style.setProperty("--x", `${random(0, 100)}%`);
+      blade.style.setProperty("--height", `${random(40, 180)}px`);
+      blade.style.setProperty("--leaf", `${random(12, 40)}px`);
+      blade.style.setProperty("--speed", `${random(2, 5)}s`);
+      meadow.appendChild(blade);
+    }
+
+    for (let i = 0; i < 20; i++) {
+      const light = document.createElement("span");
+      light.className = "firefly";
+      light.style.setProperty("--left", `${random(0, 100)}%`);
+      light.style.setProperty("--bottom", `${random(8, 52)}%`);
+      light.style.setProperty("--size", `${random(2, 5)}px`);
+      light.style.setProperty("--duration", `${random(2, 6)}s`);
+      light.style.setProperty("--delay", `${random(-5, 0)}s`);
+      meadow.appendChild(light);
+    }
+
+    toggle.addEventListener("click", () => {
+      const isOpen = toggle.getAttribute("aria-expanded") !== "true";
+
+      toggle.setAttribute("aria-expanded", String(isOpen));
+      toggle.textContent = isOpen
+        ? "Close your little letter"
+        : "Read your little letter";
+
+      panel.classList.toggle("is-open", isOpen);
+      panel.setAttribute("aria-hidden", String(!isOpen));
+      panel.toggleAttribute("inert", !isOpen);
+    });
+  </script>
+</body>
+</html>
+``
